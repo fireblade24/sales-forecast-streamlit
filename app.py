@@ -52,7 +52,21 @@ if uploaded_file:
             "If sales are trending down, you might want to adjust your strategy. "
             "If they’re trending up, be prepared for increased demand!"
         )
+        st.markdown("### 📅 Daily Forecast with Explanations")
 
+        for _, row in forecast_summary.iterrows():
+            date_str = row['ds'].strftime('%A, %B %d')
+            yhat = round(row['yhat'], 2)
+            lower = round(row['yhat_lower'], 2)
+            upper = round(row['yhat_upper'], 2)
+
+            st.markdown(
+                f"- **{date_str}**: Expected sales: **${yhat:,.2f}** (range: ${lower:,.2f}–${upper:,.2f}). "
+                f"Plan for the higher end if it's a weekend, holiday, or promo day."
+            )
+
+        
+        
         st.subheader("📋 Forecasted Data Table")
         st.write(forecast[['ds', 'yhat', 'yhat_lower', 'yhat_upper']].tail())
 
