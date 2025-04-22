@@ -7,57 +7,35 @@ st.set_page_config(page_title="Sales Forecast", layout="wide")
 
 st.title("📈 Sales Forecast App (Powered by Prophet)")
 
-uploaded_file = st.file_uploader("Upload your CSV with 'ds' and 'y' columns", type=["csv"])
+uploaded_file = st.file_uploader("Upload your CSV with 'ds' (date) and 'y' (sales)", type=["csv"])
 
 if uploaded_file:
     data = pd.read_csv(uploaded_file)
-    st.write("Preview of Uploaded Data:", data.head())
+    st.write("🗂️ Preview of Uploaded Data:", data.head())
 
-    data['ds'] = pd.to_datetime(data['ds'])
-    data['y'] = pd.to_numeric(data['y'], errors='coerce')
+    try:
+        data['ds'] = pd.to_datetime(data['ds'])
+        data['y'] = pd.to_numeric(data['y'], errors='coerce')
 
-    model = Prophet()
-    model.fit(data)
+        model = Prophet()
+        model.fit(data)
 
-    periods_input = st.number_input("Days to forecast:", min_value=7, max_value=365, value=30)
-    future = model.make_future_dataframe(periods=periods_input)
-    forecast = model.predict(future)
+        periods_input = st.number_input("How many days to forecast?", min_value=7, max_value=365, value=30)
+        future = model.make_future_dataframe(periods=periods_input)
+        forecast = model.predict(future)
 
-    st.subheader("Forecast")
-    fig1 = plot_plotly(model, forecast)
-    st.plotly_chart(fig1, use_container_width=True)
+        st.subheader("📉 Forecasted Sales")
+        fig1 = plot_plotly(model, forecast)
+        st.plotly_chart(fig1, use_container_width=True)
 
-    st.subheader("Forecasted Data Table")
-    st.write(forecast[['ds', 'yhat', 'yhat_lower', 'yhat_upper']].tail())
+        # 📊 Simple Summary
+        forecast_summary = forecast[['ds', 'yhat', 'yhat_lower', 'yhat_upper']].tail(periods_input)
+        avg_forecast = round(forecast_summary['yhat'].mean(), 2)
+        max_day = forecast_summary.loc[forecast_summary['yhat'].idxmax()]
+        min_day = forecast_summary.loc[forecast_summary['yhat'].idxmin()]
+        first = forecast_summary.iloc[0]['yhat']
+        last = forecast_summary.iloc[-1]['yhat']
+        direction = "increase" if last > first else "decrease"
+        diff = round(abs(last - first), 2)
 
-    csv = forecast.to_csv(index=False).encode('utf-8')
-    st.download_button("Download Forecast CSV", csv, "forecast.csv", "text/csv")
-
-# Get latest forecast period
-forecast_summary = forecast[['ds', 'yhat', 'yhat_lower', 'yhat_upper']].tail(periods_input)
-
-avg_forecast = round(forecast_summary['yhat'].mean(), 2)
-max_day = forecast_summary.loc[forecast_summary['yhat'].idxmax()]
-min_day = forecast_summary.loc[forecast_summary['yhat'].idxmin()]
-
-st.markdown("### 📊 Forecast Summary")
-st.markdown(f"""
-- **Average forecasted daily sales:** ${avg_forecast:,.2f}
-- **Peak day:** {max_day['ds'].date()} — ${max_day['yhat']:,.2f}
-- **Lowest day:** {min_day['ds'].date()} — ${min_day['yhat']:,.2f}
-""")
-
-# Sales direction
-first = forecast_summary.iloc[0]['yhat']
-last = forecast_summary.iloc[-1]['yhat']
-direction = "increase" if last > first else "decrease"
-diff = round(abs(last - first), 2)
-
-st.markdown(f"- **Sales are projected to {direction} by** ${diff:,.2f} over the forecast period.")
-
-st.info(
-    "💡 **What this means:**\n"
-    "Use this forecast to plan staffing, inventory, or promos. If sales are dropping, consider boosting traffic. "
-    "If they’re climbing, be ready for more demand!"
-)
-
+        st.markdown("###
