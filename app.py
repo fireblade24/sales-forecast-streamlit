@@ -4,10 +4,9 @@ from prophet import Prophet
 from prophet.plot import plot_plotly
 
 st.set_page_config(page_title="Sales Forecast", layout="wide")
+st.title("📈 Sales Forecast App (with Actuals Comparison)")
 
-st.title("📈 Sales Forecast App (Powered by Prophet)")
-
-uploaded_file = st.file_uploader("Upload your CSV with 'ds' (date) and 'y' (sales)", type=["csv"])
+uploaded_file = st.file_uploader("Upload your historical sales CSV (columns: 'ds', 'y')", type=["csv"])
 
 if uploaded_file:
     try:
@@ -28,7 +27,6 @@ if uploaded_file:
         fig1 = plot_plotly(model, forecast)
         st.plotly_chart(fig1, use_container_width=True)
 
-        # 📊 Simple Forecast Summary
         forecast_summary = forecast[['ds', 'yhat', 'yhat_lower', 'yhat_upper']].tail(periods_input)
         avg_forecast = round(forecast_summary['yhat'].mean(), 2)
         max_day = forecast_summary.loc[forecast_summary['yhat'].idxmax()]
@@ -46,32 +44,36 @@ if uploaded_file:
             f"- **Sales are projected to {direction} by** ${diff:,.2f} over the forecast period."
         )
 
-        st.info(
-            "💡 **What this means:**\n"
-            "Use this forecast to help plan staffing, inventory, or promotions. "
-            "If sales are trending down, you might want to adjust your strategy. "
-            "If they’re trending up, be prepared for increased demand!"
-        )
         st.markdown("### 📅 Daily Forecast with Explanations")
-
         for _, row in forecast_summary.iterrows():
             date_str = row['ds'].strftime('%A, %B %d')
             yhat = round(row['yhat'], 2)
             lower = round(row['yhat_lower'], 2)
             upper = round(row['yhat_upper'], 2)
-
             st.markdown(
                 f"- **{date_str}**: Expected sales: **${yhat:,.2f}** (range: ${lower:,.2f}–${upper:,.2f}). "
                 f"Plan for the higher end if it's a weekend, holiday, or promo day."
             )
 
-        
-        
-        st.subheader("📋 Forecasted Data Table")
-        st.write(forecast[['ds', 'yhat', 'yhat_lower', 'yhat_upper']].tail())
+        # 📥 Upload actuals for comparison
+        st.markdown("---")
+        st.subheader("📌 Upload Actuals to Compare")
 
-        csv = forecast.to_csv(index=False).encode('utf-8')
-        st.download_button("⬇️ Download Forecast CSV", csv, "forecast.csv", "text/csv")
+        actuals_file = st.file_uploader("Upload Actuals CSV (columns: 'ds', 'y')", type=["csv"], key="actuals")
+        if actuals_file:
+            actuals = pd.read_csv(actuals_file)
+            actuals['ds'] = pd.to_datetime(actuals['ds'])
+            actuals.rename(columns={'y': 'actual_y'}, inplace=True)
+
+            merged = pd.merge(forecast_summary, actuals, on='ds', how='left')
+            merged['error_abs'] = (merged['actual_y'] - merged['yhat']).abs()
+            merged['error_%'] = (merged['error_abs'] / merged['actual_y']) * 100
+
+            st.markdown("### ✅ Forecast vs Actuals")
+            st.dataframe(merged[['ds', 'yhat', 'actual_y', 'error_abs', 'error_%']])
+
+            csv = merged.to_csv(index=False).encode('utf-8')
+            st.download_button("⬇️ Download Comparison CSV", csv, "forecast_vs_actual.csv", "text/csv")
 
     except Exception as e:
-        st.error("⚠️ Something went wrong. Make sure your file has 'ds' and 'y' columns in the correct format.")
+        st.error("⚠️ There was an error. Please make sure both files use correct column names: 'ds', 'y'.")
