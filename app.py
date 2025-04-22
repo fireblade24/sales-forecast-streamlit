@@ -32,3 +32,32 @@ if uploaded_file:
 
     csv = forecast.to_csv(index=False).encode('utf-8')
     st.download_button("Download Forecast CSV", csv, "forecast.csv", "text/csv")
+
+# Get latest forecast period
+forecast_summary = forecast[['ds', 'yhat', 'yhat_lower', 'yhat_upper']].tail(periods_input)
+
+avg_forecast = round(forecast_summary['yhat'].mean(), 2)
+max_day = forecast_summary.loc[forecast_summary['yhat'].idxmax()]
+min_day = forecast_summary.loc[forecast_summary['yhat'].idxmin()]
+
+st.markdown("### 📊 Forecast Summary")
+st.markdown(f"""
+- **Average forecasted daily sales:** ${avg_forecast:,.2f}
+- **Peak day:** {max_day['ds'].date()} — ${max_day['yhat']:,.2f}
+- **Lowest day:** {min_day['ds'].date()} — ${min_day['yhat']:,.2f}
+""")
+
+# Sales direction
+first = forecast_summary.iloc[0]['yhat']
+last = forecast_summary.iloc[-1]['yhat']
+direction = "increase" if last > first else "decrease"
+diff = round(abs(last - first), 2)
+
+st.markdown(f"- **Sales are projected to {direction} by** ${diff:,.2f} over the forecast period.")
+
+st.info(
+    "💡 **What this means:**\n"
+    "Use this forecast to plan staffing, inventory, or promos. If sales are dropping, consider boosting traffic. "
+    "If they’re climbing, be ready for more demand!"
+)
+
