@@ -53,8 +53,6 @@ firebase deploy --only firestore:rules,firestore:indexes
 
 ## 6) Run locally
 
-> Workspace packages (`@flowtasks/shared`, `@flowtasks/scheduler`) are resolved from `src` during `dev`, so you do not need to pre-build those packages before starting the API.
-
 Terminal A:
 ```bash
 npm run -w @flowtasks/api dev
