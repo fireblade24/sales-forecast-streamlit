@@ -25,7 +25,10 @@ planRouter.post("/autoplanDay", validate(DateBodySchema), async (req: AuthedRequ
   const context = await loadContext(req.userId!);
   const scheduled = autoplanDay(req.userId!, req.body.date, context as any);
   const batch = db.batch();
-  scheduled.forEach((task) => batch.update(db.collection("tasks").doc(task.id), task));
+  scheduled.forEach((task) => {
+    if (!task.id) return;
+    batch.update(db.collection("tasks").doc(task.id), task);
+  });
   await batch.commit();
   res.json({ count: scheduled.length });
 });
@@ -34,7 +37,10 @@ planRouter.post("/reflowDay", validate(DateBodySchema), async (req: AuthedReques
   const context = await loadContext(req.userId!);
   const scheduled = reflowDay(req.userId!, req.body.date, context as any);
   const batch = db.batch();
-  scheduled.forEach((task) => batch.update(db.collection("tasks").doc(task.id), task));
+  scheduled.forEach((task) => {
+    if (!task.id) return;
+    batch.update(db.collection("tasks").doc(task.id), task);
+  });
   await batch.commit();
   res.json({ count: scheduled.length });
 });
@@ -43,7 +49,10 @@ planRouter.post("/rescheduleMissed", validate(RangeBodySchema), async (req: Auth
   const context = await loadContext(req.userId!);
   const scheduled = rescheduleMissedTasks(req.userId!, req.body, context as any);
   const batch = db.batch();
-  scheduled.forEach((task) => batch.update(db.collection("tasks").doc(task.id), task));
+  scheduled.forEach((task) => {
+    if (!task.id) return;
+    batch.update(db.collection("tasks").doc(task.id), task);
+  });
   await batch.commit();
   res.json({ count: scheduled.length });
 });

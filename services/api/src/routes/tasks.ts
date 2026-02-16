@@ -15,18 +15,21 @@ tasksRouter.post("/", validate(CreateTaskBodySchema), async (req: AuthedRequest,
 });
 
 tasksRouter.patch("/:id", validate(UpdateTaskBodySchema), async (req: AuthedRequest, res) => {
-  const ref = db.collection("tasks").doc(req.params.id);
+  const taskId = String(req.params.id);
+  const ref = db.collection("tasks").doc(taskId);
   await ref.update({ ...req.body, updatedAt: new Date().toISOString() });
   res.json({ ok: true });
 });
 
 tasksRouter.post("/:id/complete", async (req: AuthedRequest, res) => {
-  await db.collection("tasks").doc(req.params.id).update({ status: "done", updatedAt: new Date().toISOString(), lastModifiedBy: "user" });
+  const taskId = String(req.params.id);
+  await db.collection("tasks").doc(taskId).update({ status: "done", updatedAt: new Date().toISOString(), lastModifiedBy: "user" });
   res.json({ ok: true });
 });
 
 tasksRouter.post("/:id/snooze", validate(SnoozeBodySchema), async (req: AuthedRequest, res) => {
   const snoozedUntil = addMinutes(new Date(), req.body.minutes).toISOString();
-  await db.collection("tasks").doc(req.params.id).update({ status: "snoozed", snoozedUntil, updatedAt: new Date().toISOString() });
+  const taskId = String(req.params.id);
+  await db.collection("tasks").doc(taskId).update({ status: "snoozed", snoozedUntil, updatedAt: new Date().toISOString() });
   res.json({ ok: true, snoozedUntil });
 });

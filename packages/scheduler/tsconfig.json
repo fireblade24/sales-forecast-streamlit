@@ -3,7 +3,6 @@
   "include": ["src/**/*.ts"],
   "exclude": ["test/**/*.ts"],
   "compilerOptions": {
-    "rootDir": "src",
     "baseUrl": ".",
     "paths": {
       "@flowtasks/shared": ["../shared/src/index.ts"]
