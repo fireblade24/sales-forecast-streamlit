@@ -38,13 +38,17 @@ export function TalkCaptureClient() {
 
   return (
     <div className="card">
+      <p className="kicker">Voice Capture</p>
       <button className="primary" onClick={startVoice}>Start Voice Capture</button>
       <textarea
-        style={{ width: "100%", minHeight: 100, marginTop: 8 }}
+        style={{ marginTop: 10 }}
         value={text}
         onChange={(event) => setText(event.target.value)}
+        placeholder="Try: 'Tomorrow at 10, 25 minutes to call insurance'"
       />
-      <button onClick={async () => setResult(await api("/v1/ai/parseTask", "POST", { text }))}>Parse</button>
+      <div className="row" style={{ marginTop: 10 }}>
+        <button onClick={async () => setResult(await api("/v1/ai/parseTask", "POST", { text }))}>Parse Task</button>
+      </div>
       {result !== null && <pre>{JSON.stringify(result, null, 2)}</pre>}
     </div>
   );
