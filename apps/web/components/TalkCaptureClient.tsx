@@ -45,7 +45,7 @@ export function TalkCaptureClient() {
         onChange={(event) => setText(event.target.value)}
       />
       <button onClick={async () => setResult(await api("/v1/ai/parseTask", "POST", { text }))}>Parse</button>
-      {result && <pre>{JSON.stringify(result, null, 2)}</pre>}
+      {result !== null && <pre>{JSON.stringify(result, null, 2)}</pre>}
     </div>
   );
 }
