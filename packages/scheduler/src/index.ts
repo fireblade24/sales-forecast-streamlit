@@ -34,7 +34,7 @@ export function autoplanTasks(input: DayPlanInput): ScheduledTask[] {
 
   const candidates = [...input.tasks]
     .filter((t) => t.status !== "done")
-    .sort((a: Task, b: Task) => energyRank[b.energyLevel] - energyRank[a.energyLevel] || a.durationMinutes - b.durationMinutes)
+    .sort((a, b) => energyRank[b.energyLevel] - energyRank[a.energyLevel] || a.durationMinutes - b.durationMinutes)
     .slice(0, input.preferences.maxTasksPerDay);
 
   const output: ScheduledTask[] = [];
