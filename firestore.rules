@@ -1,0 +1,22 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function isSignedIn() { return request.auth != null; }
+    function isOwner(userId) { return isSignedIn() && request.auth.uid == userId; }
+
+    function noSystemFieldsChanged() {
+      return !("lastModifiedBy" in request.resource.data) || request.resource.data.lastModifiedBy == "user";
+    }
+
+    match /users/{userId} {
+      allow read, write: if isOwner(userId);
+    }
+
+    match /{collection}/{docId} {
+      allow read: if isSignedIn() && resource.data.userId == request.auth.uid;
+      allow create, update, delete: if isSignedIn()
+        && request.resource.data.userId == request.auth.uid
+        && noSystemFieldsChanged();
+    }
+  }
+}
