@@ -65,6 +65,12 @@ Terminal B:
 npm run -w @flowtasks/web dev
 ```
 
+If Next.js ever throws missing chunk errors like `Cannot find module "./295.js"` from `.next/server/webpack-runtime.js`, clear the Next build cache and restart:
+```bash
+npm run -w @flowtasks/web clean
+npm run -w @flowtasks/web dev
+```
+
 ## 7) Deploy API to Cloud Run
 
 ```bash
