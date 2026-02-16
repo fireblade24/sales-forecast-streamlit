@@ -1,0 +1,17 @@
+{
+  "name": "@flowtasks/web",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "test": "echo 'no tests'",
+    "lint": "echo 'no lint'"
+  },
+  "dependencies": {
+    "next": "15.0.3",
+    "react": "18.3.1",
+    "react-dom": "18.3.1"
+  }
+}
